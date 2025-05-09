@@ -8,7 +8,7 @@ body {
 }
 
 .dashboard {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 2rem auto;
   padding: 2rem;
   border-radius: 12px;
@@ -31,9 +31,29 @@ h2, h4 {
   margin-bottom: 1.5rem;
 }
 
-.button-group button,
-form button,
-.logout {
+.button-group button {
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  color: #fff;
+}
+
+.button-group button:nth-child(1) { background-color: #6a1b9a; } /* Pie Chart */
+.button-group button:nth-child(2) { background-color: #1976d2; } /* Transaction History */
+.button-group button:nth-child(3) { background-color: #388e3c; } /* Add Transaction */
+.button-group button:nth-child(4) { background-color: #fbc02d; color: #000; } /* Budget Limits */
+.button-group button:nth-child(5) { background-color: #e64a19; } /* Savings Goals */
+
+.button-group button:nth-child(1):hover { background-color: #4a148c; }
+.button-group button:nth-child(2):hover { background-color: #1565c0; }
+.button-group button:nth-child(3):hover { background-color: #2e7d32; }
+.button-group button:nth-child(4):hover { background-color: #f9a825; }
+.button-group button:nth-child(5):hover { background-color: #d84315; }
+
+form button {
   background-color: #333;
   color: #fff;
   border: none;
@@ -44,9 +64,7 @@ form button,
   transition: background-color 0.3s;
 }
 
-.button-group button:hover,
-form button:hover,
-.logout:hover {
+form button:hover {
   background-color: #555;
 }
 
@@ -91,17 +109,41 @@ li.expense {
   color: lightcoral;
 }
 
-li button {
+li button,
+button.delete-goal,
+button.delete-limit {
   background-color: #ff5252;
   color: white;
   border: none;
   border-radius: 6px;
   padding: 0.3rem 0.75rem;
   cursor: pointer;
+  margin-left: 10px;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+li button:hover,
+button.delete-goal:hover,
+button.delete-limit:hover {
+  background-color: #d32f2f;
 }
 
 .logout {
   margin-top: 1rem;
+  margin-bottom: 10px;
+  background-color: #e53935;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.logout:hover {
+  background-color: #d32f2f;
 }
 
 .chart {
@@ -109,9 +151,28 @@ li button {
   padding: 1rem;
   background-color: #2a2e38;
   border-radius: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+  gap: 2rem;
+}
+
+.chart h4 {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 1rem;
+  border: none;
+  font-size: 1.2rem;
+}
+
+.chart > div {
+  flex: 1;
+  max-width: 280px;
 }
 
 /* Progress Bars for Goals */
 .dashboard div[style*='limegreen'] {
   transition: width 0.5s ease-in-out;
 }
+

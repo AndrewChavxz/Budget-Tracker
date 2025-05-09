@@ -10,13 +10,13 @@ const App = () => {
   const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('budget_data')) || []);
   const [view, setView] = useState('chart');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('income');
   const [limits, setLimits] = useState(() => JSON.parse(localStorage.getItem('budget_limits')) || {});
   const [goals, setGoals] = useState(() => JSON.parse(localStorage.getItem('budget_goals')) || []);
 
   const [newUser, setNewUser] = useState('');
-  const [category, setCategory] = useState('');
   const [limit, setLimit] = useState('');
   const [goalName, setGoalName] = useState('');
   const [goalTarget, setGoalTarget] = useState('');
@@ -38,9 +38,10 @@ const App = () => {
 
   const handleAddTransaction = (e) => {
     e.preventDefault();
-    const txn = { description, amount: parseFloat(amount), type };
+    const txn = { description, category, amount: parseFloat(amount), type };
     setTransactions([txn, ...transactions]);
     setDescription('');
+    setCategory('');
     setAmount('');
     setType('income');
   };
@@ -49,20 +50,46 @@ const App = () => {
     setTransactions(transactions.filter((_, i) => i !== index));
   };
 
-  const categoryTotals = transactions.reduce((totals, txn) => {
-    if (txn.type === 'expense') {
-      const cat = txn.description.toLowerCase();
-      totals[cat] = (totals[cat] || 0) + txn.amount;
-    }
+  const handleDeleteLimit = (cat) => {
+    const newLimits = { ...limits };
+    delete newLimits[cat];
+    setLimits(newLimits);
+  };
+
+  const handleDeleteGoal = (index) => {
+    const updatedGoals = [...goals];
+    updatedGoals.splice(index, 1);
+    setGoals(updatedGoals);
+  };
+
+  const incomeCategoryTotals = transactions.filter(t => t.type === 'income').reduce((totals, txn) => {
+    const key = txn.category ? txn.category.toLowerCase() : 'uncategorized';
+    totals[key] = (totals[key] || 0) + txn.amount;
     return totals;
   }, {});
 
-  const chartData = {
-    labels: transactions.filter(t => t.type === 'expense').map(t => t.description),
+  const expenseCategoryTotals = transactions.filter(t => t.type === 'expense').reduce((totals, txn) => {
+    const key = txn.category ? txn.category.toLowerCase() : 'uncategorized';
+    totals[key] = (totals[key] || 0) + txn.amount;
+    return totals;
+  }, {});
+
+  const incomeChartData = {
+    labels: Object.keys(incomeCategoryTotals),
     datasets: [
       {
-        data: transactions.filter(t => t.type === 'expense').map(t => t.amount),
-        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+        data: Object.values(incomeCategoryTotals),
+        backgroundColor: ['#4caf50', '#81c784', '#66bb6a', '#388e3c', '#2e7d32']
+      }
+    ]
+  };
+
+  const expenseChartData = {
+    labels: Object.keys(expenseCategoryTotals),
+    datasets: [
+      {
+        data: Object.values(expenseCategoryTotals),
+        backgroundColor: ['#e53935', '#fb8c00', '#fdd835', '#8e24aa', '#3949ab']
       }
     ]
   };
@@ -101,8 +128,14 @@ const App = () => {
 
       {view === 'chart' && (
         <div className="chart">
-          <h4>Expense Breakdown</h4>
-          <Pie data={chartData} />
+          <div>
+            <h4>Expense Breakdown</h4>
+            <Pie data={expenseChartData} width={200} height={200} />
+          </div>
+          <div>
+            <h4>Income Breakdown</h4>
+            <Pie data={incomeChartData} width={200} height={200} />
+          </div>
         </div>
       )}
 
@@ -113,7 +146,7 @@ const App = () => {
           <ul>
             {transactions.map((t, i) => (
               <li key={i} className={t.type}>
-                {t.description} - ${t.amount} ({t.type})
+                {t.description} - ${t.amount} ({t.type}, {t.category || 'uncategorized'})
                 <button onClick={() => handleDeleteTransaction(i)}>Delete</button>
               </li>
             ))}
@@ -124,6 +157,7 @@ const App = () => {
       {view === 'add' && (
         <form onSubmit={handleAddTransaction}>
           <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" required />
+          <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Category" required />
           <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" required />
           <select value={type} onChange={(e) => setType(e.target.value)}>
             <option value="income">Income</option>
@@ -148,8 +182,9 @@ const App = () => {
           </form>
           {Object.entries(limits).map(([cat, lim]) => (
             <div key={cat}>
-              <strong>{cat}</strong>: ${lim} — Spent: ${categoryTotals[cat] || 0}
-              {categoryTotals[cat] > lim && <span style={{ color: 'red' }}> ⚠ Over budget!</span>}
+              <strong>{cat}</strong>: ${lim} — Spent: ${expenseCategoryTotals[cat] || 0}
+              {expenseCategoryTotals[cat] > lim && <span style={{ color: 'red' }}> ⚠ Over budget!</span>}
+              <button className="delete-limit" onClick={() => handleDeleteLimit(cat)}>Delete</button>
             </div>
           ))}
         </div>
@@ -176,6 +211,7 @@ const App = () => {
                 <div style={{ background: '#333', height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
                   <div style={{ width: `${progress}%`, background: 'limegreen', height: '100%' }}></div>
                 </div>
+                <button className="delete-goal" onClick={() => handleDeleteGoal(i)}>Delete</button>
               </div>
             );
           })}
@@ -186,3 +222,4 @@ const App = () => {
 };
 
 export default App;
+
